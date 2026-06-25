@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import os
+import threading
 import time
 import sys
 from pathlib import Path
@@ -12,6 +14,7 @@ from .llm import LLMError
 from .logging import latest_log_path, tail_lines
 from .pinchtab import install_pinchtab
 from .telegram import TelegramBot, TelegramError
+from .web import run_web
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -34,6 +37,16 @@ def build_parser() -> argparse.ArgumentParser:
 
     telegram = sub.add_parser("telegram", help="Run Telegram long-polling chat bot")
     telegram.add_argument("--workspace", type=Path)
+
+    web = sub.add_parser("web", help="Run browser chat UI")
+    web.add_argument("--workspace", type=Path)
+    web.add_argument("--host", default=None)
+    web.add_argument("--port", type=int, default=None)
+
+    serve = sub.add_parser("serve", help="Run web UI and Telegram bot when configured")
+    serve.add_argument("--workspace", type=Path)
+    serve.add_argument("--host", default=None)
+    serve.add_argument("--port", type=int, default=None)
     return parser
 
 
@@ -69,6 +82,21 @@ def main(argv: list[str] | None = None) -> int:
         except TelegramError as exc:
             print(f"Error: {exc}", file=sys.stderr)
             return 2
+
+    if args.command == "web":
+        cfg = load_config(workspace=args.workspace)
+        run_web(cfg, host=args.host, port=args.port)
+        return 0
+
+    if args.command == "serve":
+        cfg = load_config(workspace=args.workspace)
+        if cfg.telegram_token:
+            thread = threading.Thread(target=_run_telegram, args=(cfg,), daemon=True)
+            thread.start()
+        else:
+            print("TELEGRAM_BOT_TOKEN is not set; running web UI only.")
+        run_web(cfg, host=args.host, port=args.port)
+        return 0
 
     if args.command == "chat" or args.command is None:
         cfg = load_config(workspace=getattr(args, "workspace", None))
@@ -119,6 +147,15 @@ def _print_answer(agent: Agent, prompt: str) -> int:
 def _slash_args(text: str) -> str:
     parts = text.split(maxsplit=1)
     return parts[1].strip() if len(parts) > 1 else ""
+
+
+def _run_telegram(cfg) -> None:
+    try:
+        TelegramBot(cfg).run_forever()
+    except TelegramError as exc:
+        print(f"Telegram error: {exc}", file=sys.stderr)
+        if os.environ.get("MINIHERMES_TELEGRAM_REQUIRED", "").lower() in {"1", "true", "yes", "on"}:
+            raise
 
 
 def _print_logs(logs_dir: Path, lines: int, follow: bool) -> int:

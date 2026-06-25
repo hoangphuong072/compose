@@ -11,8 +11,12 @@ services:
       MINIHERMES_HOME: /data
       MINIHERMES_WORKSPACE: /workspace
       MINIHERMES_LOG_DIR: /data/logs
+      MINIHERMES_WEB_HOST: 0.0.0.0
+      MINIHERMES_WEB_PORT: "${MINIHERMES_WEB_PORT:-8080}"
       MINIHERMES_LOG_TO_CONSOLE: "${MINIHERMES_LOG_TO_CONSOLE:-true}"
+    ports:
+      - "${MINIHERMES_WEB_PORT:-8080}:8080"
     volumes:
       - ./data:/data
       - ${MINIHERMES_WORKSPACE_HOST:-./workspace}:/workspace
-    command: ["telegram"]
+    command: ["serve"]

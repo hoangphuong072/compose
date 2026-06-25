@@ -16,5 +16,7 @@ RUN pip install --upgrade pip \
     && pip install -e . \
     && chmod +x /usr/local/bin/docker-entrypoint.sh
 
+EXPOSE 8080
+
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["telegram"]
+CMD ["serve"]
