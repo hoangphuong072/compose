@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+
+*.log
+.DS_Store
+
+data/
+storage/
+tmp/
+cache/
+uploads/
+
+node_modules/
+vendor/
+__pycache__/

@@ -1,0 +1,20 @@
+{
+  "model": "gpt-4o-mini",
+  "base_url": "https://api.openai.com/v1",
+  "api_key": "",
+  "max_iterations": 8,
+  "temperature": 0.2,
+  "workspace": "/workspace",
+  "enabled_toolsets": ["file", "memory", "terminal", "browser", "credentials"],
+  "telegram_token": "",
+  "telegram_allowed_chat_ids": [],
+  "tls_verify": true,
+  "show_context": false,
+  "context_max_chars": 4000,
+  "logging_enabled": true,
+  "log_level": "INFO",
+  "log_dir": "/data/logs",
+  "log_max_value_chars": 4000,
+  "log_sensitive_data": false,
+  "log_to_console": true
+}

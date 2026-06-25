@@ -1,0 +1,13 @@
+[project]
+name = "minihermes-agent"
+version = "0.1.0"
+description = "A small Hermes-inspired Python agent with an agent loop, tools, memory, and CLI."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "ICT Agent" }]
+license = { text = "MIT" }
+dependencies = []
+
+[project.scripts]
+minihermes = "minihermes.cli:main"
+

@@ -1,0 +1,18 @@
+services:
+  hermes:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MINIHERMES_HOME: /data
+      MINIHERMES_WORKSPACE: /workspace
+      MINIHERMES_LOG_DIR: /data/logs
+      MINIHERMES_LOG_TO_CONSOLE: "${MINIHERMES_LOG_TO_CONSOLE:-true}"
+    volumes:
+      - ./data:/data
+      - ${MINIHERMES_WORKSPACE_HOST:-./workspace}:/workspace
+    command: ["telegram"]

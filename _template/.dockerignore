@@ -1,0 +1,12 @@
+.git
+.env
+.env.*
+!.env.example
+
+data
+storage
+tmp
+cache
+
+*.log
+.DS_Store

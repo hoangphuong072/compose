@@ -1,0 +1,5 @@
+"""MiniHermes: a compact Hermes-inspired Python agent."""
+
+__all__ = ["__version__"]
+__version__ = "0.1.0"
+
