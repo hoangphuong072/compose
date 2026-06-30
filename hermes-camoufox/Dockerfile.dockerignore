@@ -1,0 +1,7 @@
+*
+!hermes/pyproject.toml
+!hermes/README.md
+!hermes/minihermes/
+!hermes/minihermes/**
+!hermes/config.sample.json
+!hermes/docker-entrypoint.sh

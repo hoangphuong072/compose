@@ -1,0 +1,76 @@
+services:
+  hermes:
+    image: hermes-camoufox:latest
+    build:
+      context: ..
+      dockerfile: hermes-camoufox/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MINIHERMES_HOME: /data
+      MINIHERMES_WORKSPACE: /workspace
+      MINIHERMES_LOG_DIR: /data/logs
+      MINIHERMES_WEB_HOST: 0.0.0.0
+      MINIHERMES_WEB_PORT: "${MINIHERMES_WEB_CONTAINER_PORT:-8080}"
+      MINIHERMES_LOG_TO_CONSOLE: "${MINIHERMES_LOG_TO_CONSOLE:-true}"
+      CAMOUFOX_WS_ENDPOINT: "${CAMOUFOX_WS_ENDPOINT:-ws://camoufox:9222/camoufox}"
+      PLAYWRIGHT_FIREFOX_WS_ENDPOINT: "${PLAYWRIGHT_FIREFOX_WS_ENDPOINT:-ws://camoufox:9222/camoufox}"
+    depends_on:
+      camoufox:
+        condition: service_healthy
+    ports:
+      - "${MINIHERMES_WEB_HOST_PORT:-8080}:${MINIHERMES_WEB_CONTAINER_PORT:-8080}"
+    volumes:
+      - ${MINIHERMES_DATA_HOST:-./data}:/data
+      - ${MINIHERMES_WORKSPACE_HOST:-./workspace}:/workspace
+    command: ["serve"]
+
+  camoufox:
+    image: hermes-camoufox:latest
+    build:
+      context: ..
+      dockerfile: hermes-camoufox/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      CAMOUFOX_PORT: "${CAMOUFOX_PORT:-9222}"
+      CAMOUFOX_HOST: "${CAMOUFOX_HOST:-0.0.0.0}"
+      CAMOUFOX_WS_PATH: "${CAMOUFOX_WS_PATH:-camoufox}"
+    expose:
+      - "9222"
+    volumes:
+      - ${CAMOUFOX_DATA_HOST:-./camoufox-data}:/data
+    entrypoint: []
+    command:
+      - python
+      - -c
+      - |
+        import os
+        from camoufox.server import launch_server
+
+        launch_server(
+            headless=True,
+            host=os.environ.get("CAMOUFOX_HOST", "0.0.0.0"),
+            port=int(os.environ.get("CAMOUFOX_PORT", "9222")),
+            ws_path=os.environ.get("CAMOUFOX_WS_PATH", "camoufox"),
+        )
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - |
+          import os
+          import socket
+
+          port = int(os.environ.get("CAMOUFOX_PORT", "9222"))
+          with socket.create_connection(("127.0.0.1", port), timeout=3):
+              pass
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
